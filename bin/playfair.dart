@@ -1,16 +1,37 @@
-void main() {
-  var keyString = 'monarchy';
-  var plainText = 'instrument';
+import 'dart:io';
+
+import 'package:args/args.dart';
+
+ArgResults argResults;
+const lineNumber = 'line-number';
+void main(List<String> arguments) {
+  final parser = ArgParser()
+    ..addFlag('encrypt', negatable: false, abbr: 'e')
+    ..addFlag('decrypt', negatable: false, abbr: 'd');
+
+  try {
+    argResults = parser.parse(arguments);
+
+    final text = argResults.rest[0];
+    final keyString = argResults.rest[1];
+
+    if (argResults['encrypt']) {
+      var cipherText = encrypt(text, keyString);
+      print('Cipher Text = ' + cipherText);
+    } else if (argResults['decrypt']) {
+      var plainText = decrypt(text, keyString);
+      print('Plain Text hasil dekripsi = ' + plainText);
+    }
+  } on FormatException catch (e) {
+    print(e.message);
+  } on Exception catch (e) {
+    print(e);
+  }
+  // print(argResults['encrypt']);
+  // var keyString = 'monarchy';
+  // var plainText = 'instrument';
 
   //membuat matrix berdasarkan string key
-  var matrix = generateMatrix(keyString);
-  print('Matrix kunci');
-  print(matrix);
-
-  var cipherText = encrypt(plainText, matrix);
-  print('Cipher Text = ' + cipherText);
-  var plainText2 = decrypt(cipherText, matrix);
-  print('Plain Text hasil dekripsi = ' + plainText2);
 }
 
 //mengisi matrix kosong sesuai dengan string key
@@ -35,7 +56,10 @@ List generateEmptyMatrix(int size, int d) {
   }
 }
 
-String encrypt(String plainText, List matrix) {
+String encrypt(String plainText, String keyString) {
+  var matrix = generateMatrix(keyString);
+  print('Matrix kunci');
+  printMatrix(matrix);
   var plainTextChunks = createTextChunks(plainText);
 
   var cipherText = '';
@@ -60,7 +84,10 @@ String encrypt(String plainText, List matrix) {
   return cipherText;
 }
 
-String decrypt(String cipherText, List matrix) {
+String decrypt(String cipherText, String keyString) {
+  var matrix = generateMatrix(keyString);
+  print('Matrix kunci');
+  printMatrix(matrix);
   var cipherTextChunks = createTextChunks(cipherText);
 
   var plainText = '';
@@ -112,7 +139,7 @@ List createTextChunks(String string) {
     var charCouple = string.substring(i, i + 2);
     textChunks.add([charCouple[0], charCouple[1]]);
   }
-  print(textChunks);
+  print('Pasangan Huruf : ' + textChunks.toString());
   return textChunks;
 }
 
@@ -130,4 +157,20 @@ List processKey(String keyString) {
   });
   newKeyCharList.addAll(alphabetList);
   return newKeyCharList;
+}
+
+void printMatrix(dynamic matrix) {
+  if (matrix != null) {
+    if (matrix is String) {
+      return;
+    }
+    matrix.forEach((element) {
+      if (element is String) {
+        stdout.write(element + ' ');
+      }
+
+      printMatrix(element);
+    });
+    print('');
+  }
 }
